@@ -2,21 +2,23 @@
 
 class Solution {
 public:
-int maxScore(std::vector<int>& nums) {
+long long beautifulSubarrays(std::vector<int>& nums) {
 
-	long long sum = 0;
-	int score = 0;
+	std::unordered_map<int, int> xor_occurances;
+	int current_num = 0;
+	long long result = 0;
 
-	std::sort(nums.rbegin(), nums.rend());
+	xor_occurances[0] = 1;
 
 	for (int i = 0; i < nums.size(); i++) {
 
-		sum += nums[i];
+		current_num ^= nums[i];
 
-		if (sum > 0) score++;
-		
-		else if (sum < 0) break;
+		result += xor_occurances[current_num];
+
+		xor_occurances[current_num]++;
 	}
-	return score;
+
+	return result;
 }
 };
