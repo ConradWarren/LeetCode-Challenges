@@ -24,13 +24,21 @@ public:
 			return 0;
 		}
 
-		for (int i = cache[index].size() - 1; i >= 0; i--) {
-			if (cache[index][i].second <= snap_id) {
-				return cache[index][i].first;
-			}
-		}
+        int low =0; 
+        int high = cache[index].size();
+        int mid = (low + high)/2;
 
-		return 0;
+        while(low < high){
+            
+            if(cache[index][mid].second <= snap_id){
+                low = mid+1;
+            }else{
+                high = mid;
+            }
+            mid = (low+ high)/2;
+        }
+
+		return (low > 0) ? cache[index][low-1].first : 0;
 	}
 private:
 	std::vector<std::vector<std::pair<int, int>>> cache;
