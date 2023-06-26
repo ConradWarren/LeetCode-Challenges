@@ -5,55 +5,44 @@ class Solution {
 public:
 long long totalCost(std::vector<int>& costs, int k, int candidates) {
 
-	std::priority_queue < std::pair<int, int>, std::vector<std::pair<int, int>>, std::greater <std::pair<int, int>>> min_heap;
-	std::vector<bool> used_idx(costs.size(), false);
-	int left_bound = candidates-1;
-	int right_bound = costs.size() - candidates;
-	long long sum = 0;
-	bool overlap = false;
-
-	for (int i = 0; i <= left_bound && i < costs.size(); i++) {
-		used_idx[i] = true;
-		min_heap.push({ costs[i], i });
+	std::priority_queue <int, std::vector<int>,  std::greater<int>> heap_left;
+	std::priority_queue <int, std::vector<int>,  std::greater<int>> heap_right;
+	
+	int idx_left = candidates - 1;
+	int idx_right = costs.size() - candidates;
+	long long result = 0;
+	
+	for (int i = 0; i <= idx_left && i < idx_right; i++) {
+		heap_left.push(costs[i]);
 	}
 
-	for (int i = right_bound; i < costs.size(); i++) {
+	for (int i = costs.size() - 1; i >= idx_right; i--) {
+		heap_right.push(costs[i]);
+	}
 
-		if (used_idx[i]) overlap = true;
-
-		else {
-			used_idx[i] = true;
-			min_heap.push({ costs[i], i });
+	while (k) {
+		if (heap_left.empty()) {
+			result += heap_right.top();
+			heap_right.pop();
 		}
-	}
-
-	for (int i = 0; i < k; i++) {
-
-		sum += min_heap.top().first;
-
-		if (overlap) min_heap.pop();
-		
-		else if (min_heap.top().second <= left_bound) {
-			left_bound++;
-			min_heap.pop();
-
-			if (used_idx[left_bound]) overlap = true;
-			else {
-				min_heap.push({ costs[left_bound], left_bound });
-				used_idx[left_bound] = true;
-			}
+		else if (heap_right.empty()) {
+			result += heap_left.top();
+			heap_left.pop();
+		}
+		else if (heap_left.top() <= heap_right.top()) {
+			result += heap_left.top();
+			heap_left.pop();
+			idx_left++;
+			if (idx_left < idx_right) heap_left.push(costs[idx_left]);
 		}
 		else {
-			right_bound--;
-			min_heap.pop();
-
-			if (used_idx[right_bound]) overlap = true;
-			else {
-				min_heap.push({ costs[right_bound], right_bound });
-				used_idx[right_bound] = true;
-			}
+			result += heap_right.top();
+			heap_right.pop();
+			idx_right--;
+			if (idx_left < idx_right) heap_right.push(costs[idx_right]);
 		}
+		k--;
 	}
-	return sum;;
+	return result;
 }
 };
