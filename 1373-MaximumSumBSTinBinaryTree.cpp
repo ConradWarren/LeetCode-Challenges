@@ -9,63 +9,53 @@
  *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
  * };
  */
- 
-#include <unordered_map>
-
-class NodeInfo {
-public:
-	int sum;
-	int max_value;
-	int min_value;
-	bool is_bst;
-};
 
 class Solution {
 public:
-void Tranverse_Tree(TreeNode* root, std::unordered_map<TreeNode*, NodeInfo>& node_map, std::unordered_map<TreeNode*, bool>& bst_map) {
+void Tranverse_Tree(TreeNode* root, int& max_value, int& min_value, int& sum, bool& is_bst, int& result) {
 
 	if (root == nullptr) {
+		max_value = INT_MIN;
+		min_value = INT_MAX;
+		sum = 0;
+		is_bst = true;
 		return;
 	}
 
-	Tranverse_Tree(root->left, node_map, bst_map);
-	Tranverse_Tree(root->right, node_map, bst_map);
+	int left_max = 0;
+	int left_min = 0;
+	int right_max = 0;
+	int right_min = 0;
+	int left_sum = 0;
+	int right_sum = 0;
+	bool left_bst = false;
+	bool right_bst = false;
 
-	node_map[root].sum = root->val + node_map[root->left].sum + node_map[root->right].sum;
-	node_map[root].min_value = (node_map[root->left].min_value < node_map[root->right].min_value) ? node_map[root->left].min_value : node_map[root->right].min_value;
-	node_map[root].min_value = (node_map[root].min_value < root->val) ? node_map[root].min_value : root->val;
+	Tranverse_Tree(root->left, left_max, left_min, left_sum, left_bst, result);
+	Tranverse_Tree(root->right, right_max, right_min, right_sum, right_bst, result);
 
-	node_map[root].max_value = (node_map[root->left].max_value > node_map[root->right].max_value) ? node_map[root->left].max_value : node_map[root->right].max_value;
-	node_map[root].max_value = (node_map[root].max_value > root->val) ? node_map[root].max_value : root->val;
+	sum = root->val + left_sum + right_sum;
 
-	if (node_map[root->right].min_value > root->val && node_map[root->left].max_value < root->val && node_map[root->left].is_bst && node_map[root->right].is_bst) {
-		bst_map[root] = true;
-		node_map[root].is_bst = true;
-	}
-	else {
-		node_map[root].is_bst = false;
-	}
+	if (left_bst && right_bst && right_min > root->val && left_max < root->val) is_bst = true;
+	
+	else is_bst = false;
+	
+	min_value = min(root->val, min(left_min, right_min));
+	max_value = max(root->val, max(left_max, right_max));
+
+	if (is_bst && sum > result) result = sum;
 }
 
-
-
 int maxSumBST(TreeNode* root) {
+
+	int sum = 0;
+	int min_value = 0;
+	int max_value = 0;
+	bool is_bst = false;
+	int result = 0;
+
+	Tranverse_Tree(root, max_value, min_value, sum, is_bst, result);
 	
-	std::unordered_map<TreeNode*, bool> bst_map;
-	std::unordered_map<TreeNode*, NodeInfo> node_map;
-
-	node_map[nullptr].is_bst = true;
-	node_map[nullptr].sum = 0;
-	node_map[nullptr].max_value = INT_MIN;
-	node_map[nullptr].min_value = INT_MAX;
-
-	Tranverse_Tree(root, node_map, bst_map);
-
-	int best_sum = 0;
-	for (auto& node : bst_map) {
-		best_sum = (best_sum > node_map[node.first].sum) ? best_sum : node_map[node.first].sum;
-	}
-
-	return best_sum;
+	return result;
 }
 };
