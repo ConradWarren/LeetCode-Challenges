@@ -4,21 +4,21 @@ class Solution {
 public:
 long long maxArrayValue(std::vector<int>& nums) {
 	
-	std::priority_queue<long long> pq;
-	
 
-	for (int i = nums.size() - 1; i >= 0; i--) {
+	long long current_largest = nums.back();
 
-		if (pq.empty() || nums[i] > pq.top()) {
-			pq.push(nums[i]);
+	for (int i = nums.size() - 2; i >= 0; i--) {
+
+
+		if (nums[i] > current_largest) {
+			current_largest = nums[i];
 		}
 		else {
-			long long temp = pq.top();
-			pq.pop();
-			pq.push(nums[i] + temp);
+			current_largest += nums[i];
 		}
+
 	}
 
-	return pq.top();
+	return current_largest;
 }
 };
