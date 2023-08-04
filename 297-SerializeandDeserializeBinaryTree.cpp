@@ -1,76 +1,49 @@
-/**
- * Definition for a binary tree node.
- * struct TreeNode {
- *     int val;
- *     TreeNode *left;
- *     TreeNode *right;
- *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
- * };
- */
 class Codec {
+public:
 
-	void Tranverse_Tree(TreeNode* root, std::string& key) {
+	std::string serialize(TreeNode* root) {
 
 		if (root == nullptr) {
-			key += "#,";
-			return;
+			return "#,";
 		}
-
-		key += std::to_string(root->val)  + ",";
-		Tranverse_Tree(root->left, key);
-		Tranverse_Tree(root->right, key);
+		return std::to_string(root->val) + "," + serialize(root->left) + serialize(root->right);
 	}
 
-	TreeNode* Build_Bst(std::vector<TreeNode*>& nodes, int& idx) {
+	TreeNode* Build_Tree(std::vector<int>& nodes, int& idx) {
 
-		if (nodes[idx] == nullptr) {
+		if (nodes[idx] == INT_MIN) {
 			idx++;
 			return nullptr;
 		}
-
-
-		int current_idx = idx;
+		
+		TreeNode* current = new TreeNode(nodes[idx]);
 		idx++;
-		nodes[current_idx]->left = Build_Bst(nodes, idx);
-		nodes[current_idx]->right = Build_Bst(nodes, idx);
+		current->left = Build_Tree(nodes, idx);
+		current->right = Build_Tree(nodes, idx);
 
-		return nodes[current_idx];
-	}
-	
-public:
-
-	// Encodes a tree to a single string.
-	std::string serialize(TreeNode* root) {
-
-		std::string key;
-
-		Tranverse_Tree(root, key);
-
-		return key;
+		return current;
 	}
 
-	// Decodes your encoded data to tree.
 	TreeNode* deserialize(std::string data) {
 
-		std::vector<TreeNode*> nums;
-		std::string current_num;
+		std::vector<int> nodes;
+		std::string current;
+		int idx = 0;
+
 		for (int i = 0; i < data.length(); i++) {
-			if (data[i] != ',' && data[i] != '#') {
-				current_num += data[i];
+
+			if (data[i] == ',' && !current.empty()) {
+				nodes.push_back(std::stoi(current));
+				current.clear();
 			}
 			else if (data[i] == '#') {
-				nums.push_back(nullptr);
+				nodes.push_back(INT_MIN);
 			}
-			else if(!current_num.empty()){
-				TreeNode* temp = new TreeNode(std::stoi(current_num));
-				nums.push_back(temp);
-				current_num.clear();
+			else if (data[i] != ',') {
+				current += data[i];
 			}
 		}
 
-		
-
-		int idx = 0;
-		return Build_Bst(nums, idx);
+		return Build_Tree(nodes, idx);
 	}
 };
