@@ -3,45 +3,41 @@
 
 class Solution {
 public:
-bool Solve_Can_Cross(std::unordered_map<int, int>& stones, int k, int current_stone, int target, std::vector<std::vector<bool>>& cache) {
+bool Solve(std::unordered_map<int, bool>& stones, int last_jump,int idx, std::unordered_map<int, std::unordered_map<int, bool>>& cache){
 
-	if (stones.find(current_stone) == stones.end()) return false;
-	
-	if (current_stone == target) return true;
-	
-	if (!cache[stones[current_stone]][k]) return false;
-	
-	if (k == 0) return Solve_Can_Cross(stones, 1, current_stone + 1, target, cache);
-	
-	if (k == 1) {
-		if (Solve_Can_Cross(stones, 1, current_stone + 1, target, cache)) return true;
-		
-		if (Solve_Can_Cross(stones, 2, current_stone + 2, target, cache)) return true;
-		
-		return false;
-	}
+    
+    if(stones.find(idx) == stones.end()){
+        return false;
+    }
 
-	if (Solve_Can_Cross(stones, k + 1, current_stone + k + 1, target, cache)) return true;
-	
-	if (Solve_Can_Cross(stones, k, current_stone + k, target, cache)) return true;
-	
-	if (Solve_Can_Cross(stones, k - 1, current_stone + k - 1, target, cache)) return true;
-	
-	cache[stones[current_stone]][k] = false;
+    if(stones[idx]){
+        return true;
+    }
 
-	return false;
+    if(cache[idx].find(last_jump) != cache[idx].end()){
+        return cache[idx][last_jump];
+    }
+
+    bool jump_same = Solve(stones, last_jump, idx+last_jump, cache);
+
+    bool jump_more = Solve(stones, last_jump+1, idx+last_jump+1, cache);
+
+    bool jump_less = (last_jump > 1) ? Solve(stones, last_jump-1, idx + last_jump -1, cache) : false;
+
+    cache[idx][last_jump] = (jump_less || jump_more || jump_same);
+
+    return (jump_less || jump_more || jump_same);
 }
 
 bool canCross(std::vector<int>& stones) {
 
-	std::unordered_map<int, int> stone_map;
-	std::vector<std::vector<bool>> cache(stones.size(), std::vector<bool>(stones.size(), true));
-	int target = stones.back();
+    std::unordered_map<int, bool> stone_map;
+    std::unordered_map<int, std::unordered_map<int, bool>> cache;
+    for(int i = 0; i<stones.size(); i++){
+        stone_map[stones[i]] = false;
+    }
+    stone_map[stones.back()] = true;
 
-	for (int i = 0; i < stones.size(); i++) {
-		stone_map[stones[i]] = i;
-	}
-
-	return Solve_Can_Cross(stone_map, 0, 0, target, cache);
+    return Solve(stone_map, 1, 1, cache);
 }
 };
