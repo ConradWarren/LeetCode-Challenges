@@ -1,60 +1,51 @@
-#include <vector>
-
 class Solution {
 public:
+
 int candy(std::vector<int>& ratings) {
 
 	if (ratings.size() == 1) {
 		return 1;
 	}
 
-	std::vector<int> distributed_candy(ratings.size(), 0);
-	std::vector<std::pair<int, int>> sortable_ratings(ratings.size());
+	std::vector<int> distributed_candy(ratings.size(), -1);
+	std::queue<int> node_queue;
+	int current_node = 0;
 
-	for (int i = 0; i < sortable_ratings.size(); i++) {
-		sortable_ratings[i].first = ratings[i];
-		sortable_ratings[i].second = i;
+
+	if (ratings[0] <= ratings[1]) {
+		distributed_candy[0] = 1;
+		node_queue.push(0);
 	}
 
-	std::sort(sortable_ratings.begin(), sortable_ratings.end());
+	if (ratings.back() <= ratings[ratings.size() - 2]) {
+		distributed_candy.back() = 1;
+		node_queue.push(ratings.size() - 1);
+	}
 
-	for (int i = 0; i < sortable_ratings.size(); i++) {
-
-		int idx = sortable_ratings[i].second;
-
-		if (idx == 0) {
-			if (ratings[idx + 1] == ratings[idx]) {
-				distributed_candy[idx] = 1;
-			}
-			else {
-				distributed_candy[idx] = distributed_candy[idx + 1] + 1;
-			}
-		}
-		else if (idx == ratings.size()-1) {
-
-			if (ratings[idx - 1] == ratings[idx]) {
-				distributed_candy[idx] = 1;
-			}
-			else {
-				distributed_candy[idx] = distributed_candy[idx - 1] + 1;
-			}
-		}
-		else {
-
-			if (ratings[idx] == ratings[idx + 1] && ratings[idx] == ratings[idx - 1]) {
-				distributed_candy[idx] = 1;
-			}
-			else if (ratings[idx] == ratings[idx + 1]) {
-				distributed_candy[idx] = distributed_candy[idx - 1] + 1;
-			}
-			else if (ratings[idx] == ratings[idx-1]) {
-				distributed_candy[idx] = distributed_candy[idx + 1] + 1;
-			}
-			else {
-				distributed_candy[idx] = (distributed_candy[idx + 1] > distributed_candy[idx - 1]) ? distributed_candy[idx + 1] + 1 : distributed_candy[idx - 1] + 1;
-			}
+	for (int i = 1; i < distributed_candy.size() - 1; i++) {
+		if (ratings[i] <= ratings[i + 1] && ratings[i] <= ratings[i - 1]) {
+			distributed_candy[i] = 1;
+			node_queue.push(i);
 		}
 	}
+
+	while (!node_queue.empty()){
+
+		current_node = node_queue.front();
+		node_queue.pop();
+		
+
+		if (current_node != 0 && ratings[current_node - 1] > ratings[current_node]) {
+			node_queue.push(current_node - 1);
+			distributed_candy[current_node - 1] = distributed_candy[current_node] + 1;
+		}
+		
+		if (current_node + 1 < ratings.size() && ratings[current_node + 1] > ratings[current_node]) {
+			node_queue.push(current_node + 1);
+			distributed_candy[current_node + 1] = distributed_candy[current_node] + 1;
+		}
+	}
+
 	return std::accumulate(distributed_candy.begin(), distributed_candy.end(), 0);
 }
 };
